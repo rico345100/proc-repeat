@@ -169,6 +169,12 @@ ProcRepeat.prototype.begin = function(cb) {
 	if(this._endDate && moment() > this._endDate) {
 		return this;
 	}
+	if(this._writeFile && !this._writePath) {
+		let err = new Error('You must specify the path for writing file.');
+		this.emit('error', err);
+		cb(err);
+		return this;
+	}
 	
 	cb = typeof cb === 'function' ? cb : function(){};
 
@@ -189,7 +195,6 @@ ProcRepeat.prototype.begin = function(cb) {
 		}
 
 		exec(cmd, (err, stdout, stderr) => {
-
 			if(err) {
 				this._failed++;
 
@@ -205,9 +210,8 @@ ProcRepeat.prototype.begin = function(cb) {
 
 			// if write file option is sets true, write file to write path.
 			if(this._writeFile) {
-				let writePath = this._writePath ? this._writePath : __dirname;
+				let writePath = this._writePath;
 				let filename = `${this._name}_${moment().unix()}_${this._id}_${executed}.log`; 
-				
 				let fullpath = path.resolve(writePath, filename);
 				let text = JSON.stringify({
 					stdout: stdout,

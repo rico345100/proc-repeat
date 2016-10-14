@@ -14,7 +14,7 @@ const repeat = require('./index.js');
 repeat('pwd').every(500, 'ms').only(5)
 .config({
 	writeFile: true,
-	writePath: `${__dirname}`,
+	writePath: __dirname,
 	name: 'schedule1',
 })
 .begin();
@@ -90,12 +90,13 @@ repeat('pwd').from('2016-10-14 18:00:00').to('2016-10-14 19:00:00')
 
 
 ## Log to file
-Mostly, you want to write the result to a file. You can use config option make it possible.
+Mostly, you want to write the result to a file. You can use config option to do it.
  
 ```javascript
 repeat('pwd')
 .config({
-	writeFile: true
+	writeFile: true,
+	writePath: __dirname
 })
 .begin();
 ```
@@ -106,6 +107,7 @@ You can set the name of a file with name option or use as method.
 repeat('pwd')
 .config({
 	writeFile: true,
+	writePath: __dirname
 	name: 'myschedule1'
 });
 ```
@@ -113,10 +115,10 @@ repeat('pwd')
 or
 
 ```javascript
-repeat('pwd').config({ writeFile: true }).as('myschedule1').begin();
+repeat('pwd').config({ writeFile: true, writePath: __dirname }).as('myschedule1').begin();
 ```
 
-Both are totally same.
+Both are totally same. For write file, you must set writePath too, otherwise it fails.
 
 
 ## APIs
@@ -199,7 +201,7 @@ repeat('ls -al').once().begin();
 Name the schedule.
 
 ```javascript
-repeat('ls -al').config({ writeFile: true }).as('schedule1').begin();
+repeat('ls -al').config({ writeFile: true, writePath: __dirname }).as('schedule1').begin();
 ```
 
 
