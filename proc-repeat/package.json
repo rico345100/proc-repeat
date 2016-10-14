@@ -1,0 +1,25 @@
+{
+  "name": "proc-repeat",
+  "version": "1.0.0",
+  "description": "Easy, intuitive process scheduler for node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rico345100/proc-repeat"
+  },
+  "keywords": [
+    "schedule",
+    "repeat",
+    "iteration",
+    "process",
+    "exec"
+  ],
+  "author": ".modernator",
+  "license": "MIT",
+  "dependencies": {
+    "moment": "^2.15.1"
+  }
+}
