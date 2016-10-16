@@ -1,6 +1,6 @@
 {
   "name": "proc-repeat",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Easy, intuitive process scheduler for node.js",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,12 @@
     "repeat",
     "iteration",
     "process",
-    "exec"
+    "exec",
+    "shell",
+    "sh",
+    "command",
+    "auto",
+    "automated"
   ],
   "author": ".modernator",
   "license": "MIT",

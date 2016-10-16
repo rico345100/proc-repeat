@@ -64,6 +64,17 @@ function delay(ms) {
 	});
 }
 
+function writeFile(dir, content) {
+	let writeStream = fs.createWriteStream(dir);
+
+	writeStream.on('error', (err) => {
+		console.error(`Failed to write log to ${dir}.`, err);
+	});
+
+	writeStream.write(content);
+	writeStream.end();
+}
+
 let uid = 0;
 function genId() {
 	return uid++;
@@ -87,6 +98,10 @@ function ProcRepeat(cmd) {
 	this._name = "";
 	this._writeFile = false;
 	this._writePath = '';
+	this._writeFormat = 'json';
+	this._seperate = false;
+	this._stdout = true;
+	this._stderr = true;
 	this._handler = null;
 	this._runPath = '';
 	this._executed = 0;
@@ -143,11 +158,47 @@ ProcRepeat.prototype.after = function(v, unit) {
 
 	return this;
 };
+ProcRepeat.prototype.saveAsFileTo = function(writePath) {
+	this.config({
+		writeFile: true,
+		writePath: writePath
+	});
+
+	return this;
+};
+ProcRepeat.prototype.asFormat = function(writeFormat) {
+	this.config({
+		writeFormat: writeFormat
+	});
+
+	return this;
+};
+ProcRepeat.prototype.asJSON = function() {
+	this.config({
+		writeFormat: 'json'
+	});
+
+	return this;
+};
+ProcRepeat.prototype.asText = function() {
+	this.config({
+		writeFormat: 'text'
+	});
+
+	return this;
+};
+ProcRepeat.prototype.runFrom = function(runPath) {
+	this.config({
+		runPath: runPath
+	});
+
+	return this;
+};
 ProcRepeat.prototype.config = function(config) {
 	config = config || {};
-
-	if(config.writeFile) {
-		this._writeFile = true;
+	
+	if(typeof config.writeFile !== 'undefined') {
+		this._writeFile = !!config.writeFile;
 	}
 	if(config.writePath) {
 		this._writePath = config.writePath;
@@ -161,6 +212,22 @@ ProcRepeat.prototype.config = function(config) {
 	}
 	if(config.runPath) {
 		this._runPath = config.runPath;
+	}
+	if(config.writeFormat) {
+		if(!{ text: 1, json: 1 }[config.writeFormat.toLowerCase()]) {
+			throw new Error('Write format must be text or json.');
+		}
+
+		this._writeFormat = config.writeFormat.toLowerCase();;
+	}
+	if(typeof config.seperate !== 'undefined') {
+		this._seperate = !!config.seperate;
+	}
+	if(typeof config.stdout !== 'undefined') {
+		this._stdout = !!config.stdout;
+	}
+	if(typeof config.stderr !== 'undefined') {
+		this._stderr = !!config.stderr;
 	}
 
 	return this;
@@ -209,22 +276,52 @@ ProcRepeat.prototype.begin = function(cb) {
 			cb(null, stdout, stderr);
 
 			// if write file option is sets true, write file to write path.
+			let time = moment().unix();
+
 			if(this._writeFile) {
 				let writePath = this._writePath;
-				let filename = `${this._name}_${moment().unix()}_${this._id}_${executed}.log`; 
-				let fullpath = path.resolve(writePath, filename);
-				let text = JSON.stringify({
-					stdout: stdout,
-					stderr: stderr
-				});
+				let filename = `${this._name}_${time}_${this._id}_${executed}`;
 
-				let writeStream = fs.createWriteStream(fullpath);
-				writeStream.on('error', (err) => {
-					console.error(`Failed to write log to ${fullpath}.`, err);
-				});
+				if(this._writeFormat === 'json') {
+					if(this._seperate) {
+						let fullpath_stdout = path.resolve(writePath, `${filename}_stdout.log`);
+						let fullpath_stderr = path.resolve(writePath, `${filename}_stderr.log`);
+						let text_stdout = JSON.stringify({ time: time, stdout: stdout });
+						let text_stderr = JSON.stringify({ time: time, stderr: stderr });
 
-				writeStream.write(text);
-				writeStream.end();
+						if(this._stdout) writeFile(fullpath_stdout, text_stdout);
+						if(this._stderr) writeFile(fullpath_stderr, text_stderr);
+					}
+					else {
+						let fullpath = path.resolve(writePath, `${filename}.log`);
+						let text = { time: time };
+						
+						if(this._stdout) text.stdout = stdout;
+						if(this._stderr) text.stderr = stderr;
+
+						writeFile(fullpath, JSON.stringify(text));
+					}
+				}
+				else {
+					if(this._seperate) {
+						let fullpath_stdout = path.resolve(writePath, `${filename}_stdout.log`);
+						let fullpath_stderr = path.resolve(writePath, `${filename}_stderr.log`);
+						let text_stdout = `${time}\n${stdout}`;
+						let text_stderr = `${time}\n${stderr}`;
+
+						if(this._stdout) writeFile(fullpath_stdout, text_stdout);
+						if(this._stderr) writeFile(fullpath_stderr, text_stderr);
+					}
+					else {
+						let fullpath = path.resolve(writePath, `${filename}.log`);
+						let text = `${time}`;
+
+						if(this._stdout) text += `\nstdout\n${stdout}`;
+						if(this._stderr) text += `\nstderr\n${stderr}`;
+
+						writeFile(fullpath, text);
+					}
+				}
 			}
 		});
 	}

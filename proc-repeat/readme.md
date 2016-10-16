@@ -217,12 +217,48 @@ repeat('ls -al').from('2016-10-14 18:00:00').after(1, 'minute').begin();
 ```
 
 
+### (1.0.3) saveAsFileTo(string path)
+Write output as file.
+
+```javascript
+repeat('ls -al').saveAsFileTo(__dirname);
+```
+
+
+### (1.0.3) asFormat(string writeFormat)
+Format to write as file. Valid values are 'json' and 'text'.
+
+```javascript
+repeat('ls -al').saveAsFileTo(__dirname).asFormat('text')
+```
+
+
+### (1.0.3) asJSON(void)
+Set write format to json. Most of time, you don't have to call this because JSON is default.
+
+
+### (1.0.3) asText(void)
+Set write format to text.
+
+
+### (1.0.3) runFrom(string path)
+Set run path.
+
+```javascript
+repeat('pwd').runFrom('/home/ec2-user').saveAsFile(__dirname);
+```
+
+
 ### config(object configs)
 Sets the options.
-- bool writeFile: Write file. Format is JSON. Default is false.
+- bool writeFile: Write file. Default is false. You can now change format from 1.0.3
 - bool writePath: Set the path where to write file. Default is current directory.
+- bool writeFormat: (New 1.0.3) Format which want to print. Default is json. Valid values are 'text' and 'json' yet.
+- bool seperate: (New 1.0.3) Divide stdout and stderr into seperate files. Default is false.
+- bool stdout: (New 1.0.3) Sets true to write stdout into the file. Default is true.
+- bool stderr: (New 1.0.3) Sets true to write stderr into the file. Default is true.
 - string name: Set the name of this schedule. Same as using as() method.
-- string runPath: Path for executing the command. Default is current directory.
+- string runPath: Path for executing the command. Default is current directory. If path doesn't exist, it will throw error.
 
 
 ### begin(function callback)
@@ -276,7 +312,8 @@ schedules.json
 		"config": {	
 			"writeFile": true,
 			"name": "result",
-			"path": "/home/ec2-user/app"
+			"writePath": "/home/ec2-user/app",
+			"stderr": false
 		}
 	}
 }
