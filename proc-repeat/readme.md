@@ -11,7 +11,7 @@ Example of run command "$ pwd" every 500ms only 5 times and write the result int
 ```javascript
 const repeat = require('./index.js');
 
-repeat('pwd').every(500, 'ms').only(5)
+repeat('node -v').every(500, 'ms').only(5)
 .config({
 	writeFile: true,
 	writePath: __dirname,
@@ -23,6 +23,25 @@ repeat('pwd').every(500, 'ms').only(5)
 
 ## License
 MIT. Free to use.
+
+
+## Major changes
+### 1.0.2
+- Not much, just some bug fixes.
+
+
+### 1.0.3
+- Added more methods for easy and intuitive code.
+- Now writing file format also supports text type.
+- You can now seperate stdout and stderr with seperate config option.
+- Also you can now select which output(stdout, stderr) want to "not included" in writing file.
+- And some bug fixes.
+
+
+### 1.0.4
+- You don't have specify writePath when writeFile is true. Default path is where you executed.
+- You can define schedule as JSON and can load it from JavaScript. This also will use for CLI command to execute schedules. (Not current version)
+- Every path like parameters are now based on where you executed.
 
 
 ## CPS and Event Handlers
@@ -56,6 +75,42 @@ repeat('pwd')
 	console.log('All done!');
 });
 ```
+
+
+## Create schedule from external JSON
+You can also define your schedule not just in JavaScript, with JSON. Each key is name of the method of proc-repeat, like startFrom, to, until, every etc.
+For use this, create [name].json first.
+
+```json
+{
+	"cmd": "pwd",
+	"every": [300, "ms"],
+	"config": {
+		"writeFile": true,
+		"writePath": "./",
+		"name": "schedule1"
+	}
+}
+```
+
+And then create JavaScript for execute this. For use JSON, you can use repeat.load.
+
+```javascript
+const repeat = require('proc-repeat');
+repeat.load('./schedule1.json').begin();
+```
+
+You can also define multiple schedules as JSON and load them entirely at once.
+
+```javascript
+let schedules = repeat.load(['./schedule1.json', './schedule2.json']);
+schedules[0].begin();
+schedules[1].begin();
+```
+
+Not hard, isn't it? Only you should careful is setting path, when writing file or change directory before do command with runFrom(),
+the source path that module is finding something with your customized path is where you executed this JavaScript file.
+That means that if you create JS file that load JSON and execute from current directory, all your directory settings are based on current location. 
 
 
 ## Create schedule with from and to
@@ -118,7 +173,8 @@ or
 repeat('pwd').config({ writeFile: true, writePath: __dirname }).as('myschedule1').begin();
 ```
 
-Both are totally same. For write file, you must set writePath too, otherwise it fails.
+Both are totally same. ~~For write file, you must set writePath too, otherwise it fails.~~
+** Since 1.0.4, you don't have to specify writePath. By default, it writes where you executed. Only use this when you want to set different location.
 
 
 ## APIs
@@ -130,6 +186,12 @@ Create new schedule. Basic settings(default) are run the command every 1 second 
 const repeat = require('proc-repeat');
 repeat('ls -al').begin();
 ```
+
+
+### repeat.load(string path)
+### repeat.load(array path)
+Load JSON wrote schedule(s). It works synchronously. If you pass single string, it will return new proc-repeat type object. But if you pass array of strings, it will return the array that has each proc-repeat object.
+Careful when loading multiple JSONs and execute them.
 
 
 ### from(string date)
@@ -320,3 +382,7 @@ schedules.json
 ```
 
 > $ proc-repeat schedules.json
+
+
+## P.S.
+1.0.4 version can be little buggy, so please notice me on github page if you faced some problems. Thanks!

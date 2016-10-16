@@ -107,6 +107,7 @@ function ProcRepeat(cmd) {
 	this._executed = 0;
 	this._success = 0;
 	this._failed = 0;
+	this._loadedSchedule = null;
 
 	return this;
 }
@@ -196,7 +197,7 @@ ProcRepeat.prototype.runFrom = function(runPath) {
 };
 ProcRepeat.prototype.config = function(config) {
 	config = config || {};
-	
+
 	if(typeof config.writeFile !== 'undefined') {
 		this._writeFile = !!config.writeFile;
 	}
@@ -233,14 +234,33 @@ ProcRepeat.prototype.config = function(config) {
 	return this;
 };
 ProcRepeat.prototype.begin = function(cb) {
+	// if has loaded configs, apply it.
+	if(this._loadedSchedule) {
+		let loaded = this._loadedSchedule;
+		this._cmd = loaded.cmd;
+
+		if(loaded.startFrom) this.startFrom(loaded.startFrom);
+		if(loaded.to || loaded.until) this.to(loaded.to || loaded.until);
+		if(loaded.every && Array.isArray(loaded.every)) this.every(loaded.every[0], loaded.every[1]);
+		if(loaded.only || loaded.times) this.only(loaded.only || loaded.times);
+		if(loaded.once) this.once();
+		if(loaded.as) this.as(loaded.as);
+		if(loaded.after && Array.isArray(loaded.after)) this.after(loaded.after[0], loaded.after[1]);
+		if(loaded.saveAsFileTo) this.saveAsFileTo(loaded.saveAsFileTo);
+		if(loaded.asFormat) this.asFormat(loaded.asFormat);
+		if(loaded.asJSON) this.asJSON();
+		if(loaded.asText) this.asText();
+		if(loaded.runFrom) this.runFrom(loaded.runFrom);
+		if(loaded.config && typeof loaded.config === 'object') this.config(loaded.config);
+
+		this.runFrom(process.cwd());
+	}
+
 	if(this._endDate && moment() > this._endDate) {
 		return this;
 	}
 	if(this._writeFile && !this._writePath) {
-		let err = new Error('You must specify the path for writing file.');
-		this.emit('error', err);
-		cb(err);
-		return this;
+		this._writePath = process.cwd();
 	}
 	
 	cb = typeof cb === 'function' ? cb : function(){};
@@ -410,6 +430,31 @@ ProcRepeat.prototype.stop = function() {
 
 util.inherits(ProcRepeat, EventEmitter);
 
-module.exports = function(cmd) {
+function factory(cmd) {
 	return new ProcRepeat(cmd);
+}
+factory.load = function(schedule) {
+	let tProc;
+
+	if(typeof schedule === 'string') {
+		tProc = new ProcRepeat();
+		tProc._loadedSchedule = require(path.resolve(process.cwd(), schedule));
+	}
+	else if(Array.isArray(schedule)) {
+		tProc = [];
+
+		schedule.map((schedulePath) => {
+			let t = new ProcRepeat();
+			t._loadedSchedule = require(path.resolve(process.cwd(), schedulePath)); 
+			
+			tProc.push(t);
+		});
+	}
+	else {
+		throw new Error('Failed to load ' + schedule + '. If must be string or array of strings.');
+	}
+
+	return tProc;
 };
+
+module.exports = factory;

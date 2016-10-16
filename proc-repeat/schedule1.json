@@ -1,0 +1,8 @@
+{
+	"cmd": "pwd",
+	"every": [300, "ms"],
+	"config": {
+		"writeFile": true,
+		"name": "schedule1"
+	}
+}
