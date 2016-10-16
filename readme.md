@@ -6,7 +6,7 @@ proc-repeat is automated shell script executor by node.js.
 
 
 ## Basic Example
-Example of run command "$ pwd" every 500ms only 5 times and write the result into current path named schedule1.
+Example of run command "$ node -v" every 500ms only 5 times and write the result into current path named schedule1.
 
 ```javascript
 const repeat = require('./index.js');
@@ -34,19 +34,19 @@ MIT. Free to use.
 - Added more methods for easy and intuitive code.
 - Now writing file format also supports text type.
 - You can now seperate stdout and stderr with seperate config option.
-- Also you can now select which output(stdout, stderr) want to "not included" in writing file.
-- And some bug fixes.
+- You can now select which output(stdout, stderr) want to "not included" when writing file.
+- Some bug fixes.
 
 
 ### 1.0.4
-- You don't have specify writePath when writeFile is true. Default path is where you executed.
+- You don't have to specify writePath when writeFile is true. Default path is where you executed.
 - You can define schedule as JSON and can load it from JavaScript. This also will use for CLI command to execute schedules. (Not current version)
 - Every path like parameters are now based on where you executed.
 
 
 ## CPS and Event Handlers
-proc-repeat is designed for support two options to handling the processes: CPS and Event Handlers.
-*.begin() method accept the first parameter, the callback, which call after shell command is done.
+proc-repeat is designed for supports two options to handling the process: CPS and Event Handlers.
+begin() method which start the action accept the first parameter as function, callback, which call after shell command is done.
 
 ```javascript
 repeat('pwd').begin((err, stdout, stderr) => {
@@ -78,8 +78,8 @@ repeat('pwd')
 
 
 ## Create schedule from external JSON
-You can also define your schedule not just in JavaScript, with JSON. Each key is name of the method of proc-repeat, like startFrom, to, until, every etc.
-For use this, create [name].json first.
+You can also define your schedule not just in JavaScript, with JSON. Each key is the name of a method of proc-repeat, like from, to, until, every and so on.
+For create schedule as JSON, create [name].json first.
 
 ```json
 {
@@ -93,7 +93,7 @@ For use this, create [name].json first.
 }
 ```
 
-And then create JavaScript for execute this. For use JSON, you can use repeat.load.
+And then create JavaScript for execute this. For use JSON, you can use repeat.load():
 
 ```javascript
 const repeat = require('proc-repeat');
@@ -108,14 +108,14 @@ schedules[0].begin();
 schedules[1].begin();
 ```
 
-Not hard, isn't it? Only you should careful is setting path, when writing file or change directory before do command with runFrom(),
-the source path that module is finding something with your customized path is where you executed this JavaScript file.
+Not hard, isn't it? Only you should be careful is the setting path, when writing file or change run path before do command with runFrom(),
+the source path that module finds something with your customized path is where you executed this JavaScript file.
 That means that if you create JS file that load JSON and execute from current directory, all your directory settings are based on current location. 
 
 
 ## Create schedule with from and to
-You can possible to create reserved or make timelimit with from method and to method. Both method has single argument, date or string.
-Internally it uses moment.js so you can easily handle this if you are already know about that.
+You can possible to create reserved or make time limit with from() method and to() method. Both method has single argument, date or string.
+Internally it uses moment.js, so you can easily handle this if you are already know about it.
 
 ```javascript
 // run "$ pwd" after 2016-10-14 18:00:00
@@ -145,7 +145,7 @@ repeat('pwd').from('2016-10-14 18:00:00').to('2016-10-14 19:00:00')
 
 
 ## Log to file
-Mostly, you want to write the result to a file. You can use config option to do it.
+Most of the time, you want to write the result to a file. You can use config option:
  
 ```javascript
 repeat('pwd')
@@ -156,7 +156,7 @@ repeat('pwd')
 .begin();
 ```
 
-You can set the name of a file with name option or use as method.
+You can set the name of a file with name option or use as() method.
 
 ```javascript
 repeat('pwd')
@@ -174,7 +174,7 @@ repeat('pwd').config({ writeFile: true, writePath: __dirname }).as('myschedule1'
 ```
 
 Both are totally same. ~~For write file, you must set writePath too, otherwise it fails.~~
-** Since 1.0.4, you don't have to specify writePath. By default, it writes where you executed. Only use this when you want to set different location.
+** Since 1.0.4, you don't have to specify writePath. By default, it writes where you executed. Only use this property when you want to set to different location.
 
 
 ## APIs
@@ -190,8 +190,9 @@ repeat('ls -al').begin();
 
 ### repeat.load(string path)
 ### repeat.load(array path)
-Load JSON wrote schedule(s). It works synchronously. If you pass single string, it will return new proc-repeat type object. But if you pass array of strings, it will return the array that has each proc-repeat object.
-Careful when loading multiple JSONs and execute them.
+Load JSON based schedule(s). It works synchronously. If you pass single string, it will return new proc-repeat type object.
+But if you pass array of strings, it will return the array that has each proc-repeat object.
+Becareful when loading multiple JSONs and execute them.
 
 
 ### from(string date)
@@ -215,7 +216,7 @@ repeat('ls -al').until('2016-10-14 18:00:00').begin();
 
 
 ### every(int value, string timeUnit)
-Sets the duration. timeUnit is string that must one of these value:
+Set the duration. timeUnit is string that must one of these values:
 - week
 - weeks
 - w
@@ -244,7 +245,7 @@ repeat('ls -al').every(10, 'seconds').begin();
 
 ### only(int times)
 ### times(int times)
-Sets the iteration count.
+Set the iteration count.
 
 ```javascript
 repeat('ls -al').only(2).begin();
@@ -252,7 +253,7 @@ repeat('ls -al').only(2).begin();
 
 
 ### once(void)
-Execute only once. Same as times(1).
+Execute schedule only once. Same as times(1).
 
 ```javascript
 repeat('ls -al').once().begin();
@@ -280,7 +281,7 @@ repeat('ls -al').from('2016-10-14 18:00:00').after(1, 'minute').begin();
 
 
 ### (1.0.3) saveAsFileTo(string path)
-Write output as file.
+Write output as a file.
 
 ```javascript
 repeat('ls -al').saveAsFileTo(__dirname);
@@ -288,7 +289,7 @@ repeat('ls -al').saveAsFileTo(__dirname);
 
 
 ### (1.0.3) asFormat(string writeFormat)
-Format to write as file. Valid values are 'json' and 'text'.
+Set format to write as a file. Valid values are 'json' and 'text'. Default is 'json'.
 
 ```javascript
 repeat('ls -al').saveAsFileTo(__dirname).asFormat('text')
@@ -296,7 +297,7 @@ repeat('ls -al').saveAsFileTo(__dirname).asFormat('text')
 
 
 ### (1.0.3) asJSON(void)
-Set write format to json. Most of time, you don't have to call this because JSON is default.
+Set write format to json. Most of time, you don't have to call this because JSON is default option.
 
 
 ### (1.0.3) asText(void)
@@ -312,15 +313,15 @@ repeat('pwd').runFrom('/home/ec2-user').saveAsFile(__dirname);
 
 
 ### config(object configs)
-Sets the options.
+Set the options.
 - bool writeFile: Write file. Default is false. You can now change format from 1.0.3
-- bool writePath: Set the path where to write file. Default is current directory.
-- bool writeFormat: (New 1.0.3) Format which want to print. Default is json. Valid values are 'text' and 'json' yet.
+- bool writePath: Set the path where to write a file. Default is current directory.
+- bool writeFormat: (New 1.0.3) Set the format which want to print. Default is 'json'. Valid values are 'text' and 'json'(until yet).
 - bool seperate: (New 1.0.3) Divide stdout and stderr into seperate files. Default is false.
-- bool stdout: (New 1.0.3) Sets true to write stdout into the file. Default is true.
-- bool stderr: (New 1.0.3) Sets true to write stderr into the file. Default is true.
+- bool stdout: (New 1.0.3) Set true to write stdout into a file. Default is true.
+- bool stderr: (New 1.0.3) Set true to write stderr into a file. Default is true.
 - string name: Set the name of this schedule. Same as using as() method.
-- string runPath: Path for executing the command. Default is current directory. If path doesn't exist, it will throw error.
+- string runPath: Path for executing the command. Default is current directory.
 
 
 ### begin(function callback)
@@ -368,7 +369,7 @@ schedules.json
 {
 	"schedule1": {
 		"cmd": "ls -al",
-		"startFrom": "2014-10-24 11:24:30",
+		"from": "2014-10-24 11:24:30",
 		"to": "2014-10-25 11:24:30",
 		"every": [5, "minutes"],
 		"config": {	

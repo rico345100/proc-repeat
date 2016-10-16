@@ -239,7 +239,7 @@ ProcRepeat.prototype.begin = function(cb) {
 		let loaded = this._loadedSchedule;
 		this._cmd = loaded.cmd;
 
-		if(loaded.startFrom) this.startFrom(loaded.startFrom);
+		if(loaded.from) this.from(loaded.from);
 		if(loaded.to || loaded.until) this.to(loaded.to || loaded.until);
 		if(loaded.every && Array.isArray(loaded.every)) this.every(loaded.every[0], loaded.every[1]);
 		if(loaded.only || loaded.times) this.only(loaded.only || loaded.times);
