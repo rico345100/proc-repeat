@@ -44,6 +44,11 @@ MIT. Free to use.
 - Every path like parameters are now based on where you executed.
 
 
+### 1.0.5
+- You can set append mode with appendMode option. Append Mode is only works with text mode, not json mode.
+- Added unixTimeStamp option. If this false, using time string like 2016-11-17 16:34:30:99 when logging. Default is true.
+
+
 ## CPS and Event Handlers
 proc-repeat is designed for supports two options to handling the process: CPS and Event Handlers.
 begin() method which start the action accept the first parameter as function, callback, which call after shell command is done.
@@ -358,6 +363,22 @@ repeat('pwd').every(1, 'second').only(10).until('2016-10-16 18:00:00')
 
 ```javascript
 repeat('node -v').every(300, 'ms').from('2016-10-16 18:00:00').to('2016-10-16 18:01:00');
+```
+
+
+### Write as append mode.
+You can set append mode from v1.0.5, for writing multiple logs at single file. Only each first execution will make a file.
+
+```javascript
+let schedule = repeat('pwd').times(20).every(300, 'ms')
+.config({
+	runPath: __dirname,
+	writeFile: true,
+	unixTimeStamp: false,
+	appendMode: true,
+	writeFormat: 'text',		// make sure to set writeFormat as 'text', 'json' will throw exception.
+	seperate: true
+});
 ```
 
 

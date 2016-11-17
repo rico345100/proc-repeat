@@ -2,9 +2,15 @@
 const repeat = require('./index.js');
 
 // Event Handlers
-let schedule = repeat('pwd').times(5).every(300, 'ms')
+let schedule = repeat('pwd').times(20).every(300, 'ms')
 .config({
-	runPath: __dirname
+	runPath: __dirname,
+	writeFile: true,
+	unixTimeStamp: false,
+	appendMode: true,
+	writeFormat: 'text',
+	seperate: true,
+	stderr: false
 });
 
 schedule.on('error', (err) => {

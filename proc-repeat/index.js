@@ -64,8 +64,13 @@ function delay(ms) {
 	});
 }
 
-function writeFile(dir, content) {
-	let writeStream = fs.createWriteStream(dir);
+function writeFile(dir, content, options) {
+	options = options || {};
+
+	let streamOpts = {};
+	if(options.append) streamOpts.flags = 'a';
+
+	let writeStream = fs.createWriteStream(dir, streamOpts);
 
 	writeStream.on('error', (err) => {
 		console.error(`Failed to write log to ${dir}.`, err);
@@ -99,6 +104,8 @@ function ProcRepeat(cmd) {
 	this._writeFile = false;
 	this._writePath = '';
 	this._writeFormat = 'json';
+	this._unixTimeStamp = false;
+	this._appendMode = false;
 	this._seperate = false;
 	this._stdout = true;
 	this._stderr = true;
@@ -219,7 +226,13 @@ ProcRepeat.prototype.config = function(config) {
 			throw new Error('Write format must be text or json.');
 		}
 
-		this._writeFormat = config.writeFormat.toLowerCase();;
+		this._writeFormat = config.writeFormat.toLowerCase();
+	}
+	if(config.unixTimeStamp) {
+		this._writeAsUnixTimeStamp = !!config.unixTimeStamp;
+	}
+	if(config.appendMode) {
+		this._appendMode = !!config.appendMode;
 	}
 	if(typeof config.seperate !== 'undefined') {
 		this._seperate = !!config.seperate;
@@ -272,6 +285,11 @@ ProcRepeat.prototype.begin = function(cb) {
 
 	let iterationDuration = 0;
 	let iterationCount = this._times;
+	let appendFileName = '';
+
+	if(this._writeFile && this._writeFormat === 'json' && this._appendMode) {
+		throw new Error('Append Mode is not available with JSON format writing.');
+	}
 
 	function execCommand(cmd) {
 		var executed = this._executed;
@@ -296,11 +314,28 @@ ProcRepeat.prototype.begin = function(cb) {
 			cb(null, stdout, stderr);
 
 			// if write file option is sets true, write file to write path.
-			let time = moment().unix();
+			let time = null;
+			if(this._writeAsUnixTimeStamp) {
+				time = moment().unix();
+			}
+			else {
+				time = moment().format('YYYY-MM-DD HH:mm:ss:SS');
+			}
 
 			if(this._writeFile) {
 				let writePath = this._writePath;
-				let filename = `${this._name}_${time}_${this._id}_${executed}`;
+				let filename = '';
+
+				if(this._appendMode) {
+					if(!appendFileName) {
+						appendFileName = `${this._name}_${time}_${this._id}`;
+					}
+
+					filename = appendFileName;
+				}
+				else {
+					filename = `${this._name}_${time}_${this._id}_${executed}`; 
+				}
 
 				if(this._writeFormat === 'json') {
 					if(this._seperate) {
@@ -309,8 +344,8 @@ ProcRepeat.prototype.begin = function(cb) {
 						let text_stdout = JSON.stringify({ time: time, stdout: stdout });
 						let text_stderr = JSON.stringify({ time: time, stderr: stderr });
 
-						if(this._stdout) writeFile(fullpath_stdout, text_stdout);
-						if(this._stderr) writeFile(fullpath_stderr, text_stderr);
+						if(this._stdout) writeFile(fullpath_stdout, text_stdout, { append: this._appendMode });
+						if(this._stderr) writeFile(fullpath_stderr, text_stderr, { append: this._appendMode });
 					}
 					else {
 						let fullpath = path.resolve(writePath, `${filename}.log`);
@@ -319,27 +354,26 @@ ProcRepeat.prototype.begin = function(cb) {
 						if(this._stdout) text.stdout = stdout;
 						if(this._stderr) text.stderr = stderr;
 
-						writeFile(fullpath, JSON.stringify(text));
+						writeFile(fullpath, JSON.stringify(text), { append: this._appendMode });
 					}
 				}
 				else {
 					if(this._seperate) {
 						let fullpath_stdout = path.resolve(writePath, `${filename}_stdout.log`);
 						let fullpath_stderr = path.resolve(writePath, `${filename}_stderr.log`);
-						let text_stdout = `${time}\n${stdout}`;
-						let text_stderr = `${time}\n${stderr}`;
+						let text_stdout = `[${time} STDOUT] ${stdout}\n`;
+						let text_stderr = `[${time} STDERR] ${stderr}\n`;
 
-						if(this._stdout) writeFile(fullpath_stdout, text_stdout);
-						if(this._stderr) writeFile(fullpath_stderr, text_stderr);
+						if(this._stdout) writeFile(fullpath_stdout, text_stdout, { append: this._appendMode });
+						if(this._stderr) writeFile(fullpath_stderr, text_stderr, { append: this._appendMode });
 					}
 					else {
 						let fullpath = path.resolve(writePath, `${filename}.log`);
-						let text = `${time}`;
+						let text_stdout = `[${time} STDOUT] ${stdout}\n`;
+						let text_stderr = `[${time} STDERR] ${stderr}\n`;
 
-						if(this._stdout) text += `\nstdout\n${stdout}`;
-						if(this._stderr) text += `\nstderr\n${stderr}`;
-
-						writeFile(fullpath, text);
+						if(this._stdout) writeFile(fullpath, text_stdout, { append: this._appendMode });
+						if(this._stderr) writeFile(fullpath, text_stderr, { append: this._appendMode });
 					}
 				}
 			}
