@@ -1,6 +1,6 @@
 {
   "name": "proc-repeat",
-  "version": "1.0.5",
+  "version": "1.0.61",
   "description": "Easy, intuitive process scheduler for node.js",
   "main": "index.js",
   "scripts": {

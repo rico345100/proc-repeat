@@ -49,6 +49,10 @@ MIT. Free to use.
 - Added unixTimeStamp option. If this false, using time string like 2016-11-17 16:34:30:99 when logging. Default is true.
 
 
+### 1.0.6
+- Added writeDaily option. If you write the log as append mode, your log file will be large at soon, so might you want to write file as daily. This options is built for that purpose. Default is false.
+
+
 ## CPS and Event Handlers
 proc-repeat is designed for supports two options to handling the process: CPS and Event Handlers.
 begin() method which start the action accept the first parameter as function, callback, which call after shell command is done.
@@ -320,9 +324,11 @@ repeat('pwd').runFrom('/home/ec2-user').saveAsFile(__dirname);
 ### config(object configs)
 Set the options.
 - bool writeFile: Write file. Default is false. You can now change format from 1.0.3
+- bool writeDaily: (New 1.0.6) Write file daily. Use this mode with appendMode, will create new log file daily with append mode.
 - bool writePath: Set the path where to write a file. Default is current directory.
 - bool writeFormat: (New 1.0.3) Set the format which want to print. Default is 'json'. Valid values are 'text' and 'json'(until yet).
 - bool seperate: (New 1.0.3) Divide stdout and stderr into seperate files. Default is false.
+- bool appendMode: (New 1.0.5) Write file as append mode. This is option is very useful to want to file logs in single file.
 - bool stdout: (New 1.0.3) Set true to write stdout into a file. Default is true.
 - bool stderr: (New 1.0.3) Set true to write stderr into a file. Default is true.
 - string name: Set the name of this schedule. Same as using as() method.

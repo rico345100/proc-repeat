@@ -3,6 +3,7 @@
 	"every": [300, "ms"],
 	"config": {
 		"writeFile": true,
+		"writeDaily": true,
 		"name": "schedule1"
 	}
 }

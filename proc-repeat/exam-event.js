@@ -9,6 +9,7 @@ let schedule = repeat('pwd').times(20).every(300, 'ms')
 	unixTimeStamp: false,
 	appendMode: true,
 	writeFormat: 'text',
+	writeDaily: true,
 	seperate: true,
 	stderr: false
 });
